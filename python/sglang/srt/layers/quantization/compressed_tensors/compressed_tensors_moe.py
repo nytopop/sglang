@@ -371,7 +371,10 @@ class CompressedTensorsWNA16MoEMethod(CompressedTensorsMoEMethod):
             params_dtype == torch.float16
         ), "float16 is required for MoE compressed models. Set dtype=torch.float16"  # noqa: E501
 
-        intermediate_size_full = extra_weight_attrs.pop("intermediate_size_full")
+        intermediate_size_full = extra_weight_attrs.pop("intermediate_size_full", None)
+
+        if intermediate_size_full is None:
+            intermediate_size_full = extra_weight_attrs.pop("intermediate_size")
 
         # Will transpose the loaded weight along the
         # intermediate and hidden dim sizes. Will
@@ -646,6 +649,7 @@ class CompressedTensorsWNA16MoEMethod(CompressedTensorsMoEMethod):
         correction_bias: Optional[torch.Tensor] = None,
         activation: str = "silu",
         routed_scaling_factor: Optional[float] = None,
+        **kwargs,
     ) -> torch.Tensor:
         from sglang.srt.layers.moe.topk import select_experts
 
