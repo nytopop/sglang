@@ -308,6 +308,7 @@ def select_experts(
     routed_scaling_factor: Optional[float] = None,
     num_token_non_padded: Optional[torch.Tensor] = None,
     expert_location_dispatch_info: Optional[ExpertLocationDispatchInfo] = None,
+    **kwargs,
 ):
     n_share_experts_fusion = global_server_args_dict["n_share_experts_fusion"]
     # DeepSeek V2/V3/R1 series models use grouped_top_k

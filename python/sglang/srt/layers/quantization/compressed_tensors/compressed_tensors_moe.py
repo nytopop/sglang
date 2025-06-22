@@ -27,6 +27,16 @@ if not _is_cuda:
 
 try:
     import vllm
+    from vllm.model_executor.layers.quantization.compressed_tensors.schemes import (
+        W4A16SPARSE24_SUPPORTED_BITS,
+        WNA16_SUPPORTED_BITS,
+        CompressedTensors24,
+        CompressedTensorsW4A16Sparse24,
+        CompressedTensorsW8A8Int8,
+        CompressedTensorsW8A16Fp8,
+        CompressedTensorsWNA16,
+    )
+    from vllm import _custom_ops as vllm_ops
 
     VLLM_AVAILABLE = True
 except ImportError:
@@ -359,7 +369,10 @@ class CompressedTensorsWNA16MoEMethod(CompressedTensorsMoEMethod):
             params_dtype == torch.float16
         ), "float16 is required for MoE compressed models. Set dtype=torch.float16"  # noqa: E501
 
-        intermediate_size_full = extra_weight_attrs.pop("intermediate_size_full")
+        intermediate_size_full = extra_weight_attrs.pop("intermediate_size_full", None)
+
+        if intermediate_size_full is None:
+            intermediate_size_full = extra_weight_attrs.pop("intermediate_size")
 
         # Will transpose the loaded weight along the
         # intermediate and hidden dim sizes. Will
@@ -634,6 +647,7 @@ class CompressedTensorsWNA16MoEMethod(CompressedTensorsMoEMethod):
         correction_bias: Optional[torch.Tensor] = None,
         activation: str = "silu",
         routed_scaling_factor: Optional[float] = None,
+        **kwargs,
     ) -> torch.Tensor:
         from sglang.srt.layers.moe.topk import select_experts
 
